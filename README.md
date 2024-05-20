@@ -7,6 +7,26 @@ The development of this library depends on serveral other factors, this is one s
 
 ## How to use this library
 
+### how to add the library to your cargo
+
+(expecting your directory tree looks like this)
+```
+├───libtester
+│   └───src
+├───spotify-api-token-manager
+│   ├───src
+│   │   └───util
+│   │       └───lmdb
+│   └───tests
+└───spotify_api_data
+    └───src
+```
+add this to your Cargo.toml 
+```toml
+[dependencies]
+spotify_token_manager = {path = "../spotify-api-token-manager"}
+```
+
 ### prerequisites 
 setup in the [spotify dashboard](https://developer.spotify.com/dashboard) your application, there are several tutorials online how to do that
 
@@ -47,5 +67,5 @@ note that the url of the listener always needs to be the same url you defined ea
 
 ## also important
 please note that this library will create a folder in your home dir called "stm_data" which stands simply for spotify token manage data :D
-so make sure that you dont already have a folder which is called like this 
+so make sure that you dont already have a folder which is called like this
     
