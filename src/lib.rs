@@ -4,7 +4,7 @@ use reqwest::Client;
 use chrono::{Utc, Duration};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
-
+use tokio::runtime::Runtime;
 
 mod util;
 mod refresh_tokens;
@@ -64,31 +64,50 @@ impl TokenManager {
         }
     }
 
-    pub async fn start_server(self) -> std::io::Result<()> {
+    pub async fn start_server(self) {
         println!("starting token manager.. ");
 
-        let data = ClientData {
-            client_id: self.client_id.clone(),
-            client_secret: self.client_secret.clone(),
-            listener: format!("http://{}/callback", self.listener.local_addr().expect("Failed to get local address").to_string().clone())
-        };
-
-        HttpServer::new(move || {
-            App::new()
-                .app_data(web::Data::new(data.clone()))
-                .route("/hello_world", web::get().to(greet))
-                .service(login)
-                .service(callback)
-                .service(refresh_token)
-        }).listen(self.listener)?
-        .run()
-        .await
+        self.start_actix_server()
     }
 
     pub fn get_token() -> String {
         let token = get_token_lmdb();
         token
     }
+
+    fn start_actix_server(self) {
+        std::thread::spawn(move || {
+            let system = actix_rt::System::new();
+
+            Runtime::new().unwrap().block_on(async {
+
+                let data = ClientData {
+                    client_id: self.client_id.clone(),
+                    client_secret: self.client_secret.clone(),
+                    listener: format!("http://{}/callback", self.listener.local_addr().expect("Failed to get local address").to_string().clone())
+                };
+
+                let srv = HttpServer::new(move || {
+                    App::new()
+                        .app_data(web::Data::new(data.clone()))
+                        .route("/hello_world", web::get().to(greet))
+                        .service(login)
+                        .service(callback)
+                        .service(refresh_token)
+                })
+                .listen(self.listener)
+                .unwrap()
+                .run();
+
+                let _ = srv.await;
+                
+            });
+
+            let _ = system.run();
+        });
+    }
+
+    
 }
 
 async fn greet(data: web::Data<ClientData>) -> impl Responder {
