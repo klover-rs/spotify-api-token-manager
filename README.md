@@ -60,7 +60,7 @@ async fn main() {
 
     println!("result: {}", result);
 
-    signal::ctrl_c().await.expect("failed to listen for Ctrl+C"); //keep the the thread alive, if you dont keep the thread alive unexpected issue will occur. 
+    signal::ctrl_c().await.expect("failed to listen for Ctrl+C"); //keep the the thread alive, if you dont keep the thread alive unexpected issues will occur. 
 }
 ```
 note that the url of the listener always needs to be the same url you defined earlier in the spotify developer dashboard.
