@@ -44,4 +44,8 @@ async fn main() {
 }
 ```
 note that the url of the listener always needs to be the same url you defined earlier in the spotify developer dashboard.
+
+## also important
+please note that this library will create a folder in your home dir called "stm_data" which stands simply for spotify token manage data :D
+so make sure that you dont already have a folder which is called like this 
     
