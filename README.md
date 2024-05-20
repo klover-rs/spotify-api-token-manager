@@ -23,6 +23,7 @@ here is a quick example usage
 ```rs
 use spotify_token_manager::TokenManager;
 use std::net::TcpListener;
+use tokio::signal;
 
 #[tokio::main]
 async fn main() {
@@ -38,6 +39,8 @@ async fn main() {
     let result = TokenManager::get_token();
 
     println!("result: {}", result);
+
+    signal::ctrl_c().await.expect("failed to listen for Ctrl+C"); //keep the the thread alive, if you dont keep the thread alive unexpected issue will occur. 
 }
 ```
 note that the url of the listener always needs to be the same url you defined earlier in the spotify developer dashboard.
