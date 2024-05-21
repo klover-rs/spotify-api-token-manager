@@ -33,12 +33,6 @@ pub fn refresh_tokens() {
 
                     println!("new token: {:?}", new_data);
 
-                    INIT.call_once(|| {
-                        let mut lock = TOKEN_LOCK.lock().unwrap();
-                        *lock = false;
-                        drop(lock);
-                    });
-
                     let current_timestamp = Utc::now();
 
                     let expiration_timestamp = (current_timestamp + CDuration::seconds(3600 - 450 /*calculate -450 to prevent interupts*/)).timestamp();
@@ -54,6 +48,13 @@ pub fn refresh_tokens() {
 
                     store_token_details(&new_token_details);
                     store_token(&new_access_token);
+
+                    INIT.call_once(|| {
+                        let mut lock = TOKEN_LOCK.lock().unwrap();
+                        *lock = false;
+                        drop(lock);
+                    });
+                    
                 } else {
                     INIT.call_once(|| {
                         let mut lock = TOKEN_LOCK.lock().unwrap();
