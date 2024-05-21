@@ -46,6 +46,7 @@ struct ClientData {
 
 lazy_static::lazy_static! {
     pub static ref SERVER_URL: Mutex<String> = Mutex::new("".to_string());
+    pub static ref TOKEN_LOCK: Mutex<()> = Mutex::new(());
 }
 
 impl TokenManager {
@@ -55,6 +56,7 @@ impl TokenManager {
             *server_url = listener.local_addr().unwrap().to_string();
 
             refresh_tokens();
+          
         }
 
         Self {
@@ -71,6 +73,10 @@ impl TokenManager {
     }
 
     pub fn get_token() -> String {
+
+        let _lock = TOKEN_LOCK.lock().unwrap();
+
+
         let token = get_token_lmdb();
         token
     }

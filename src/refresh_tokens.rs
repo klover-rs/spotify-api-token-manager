@@ -6,9 +6,12 @@ use tokio::time::{sleep, Duration};
 use user_idle::UserIdle;
 use chrono::{Utc, Duration as CDuration};
 
+use std::sync::Once;
 
-use crate::SERVER_URL;
 
+use crate::{SERVER_URL, TOKEN_LOCK};
+
+static INIT: Once = Once::new();
 
 pub fn refresh_tokens() {
     task::spawn(async move {
@@ -28,6 +31,14 @@ pub fn refresh_tokens() {
 
                     let new_data = refresh_access_token(&refresh_token).await.unwrap();
 
+                    println!("new token: {:?}", new_data);
+
+                    INIT.call_once(|| {
+                        std::mem::drop(TOKEN_LOCK.lock().unwrap());
+                    });
+                    
+                    println!("unlocked resource");
+
                     let current_timestamp = Utc::now();
 
                     let expiration_timestamp = (current_timestamp + CDuration::seconds(3600 - 450 /*calculate -450 to prevent interupts*/)).timestamp();
@@ -43,6 +54,11 @@ pub fn refresh_tokens() {
 
                     store_token_details(&new_token_details);
                     store_token(&new_access_token);
+                } else {
+                    INIT.call_once(|| {
+                        std::mem::drop(TOKEN_LOCK.lock().unwrap());
+                    });
+                    println!("unlocked resource");
                 }
     
             }
