@@ -56,7 +56,7 @@ async fn main() {
 
     init.start_server().await;
 
-    let result = TokenManager::get_token();
+    let result = init.get_token().await;
 
     println!("result: {}", result);
 
