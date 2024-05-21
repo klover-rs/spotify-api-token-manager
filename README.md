@@ -30,6 +30,8 @@ and yea the obvious, please do not forget to actually clone or download the repo
 
 
 ### prerequisites 
+- [rust language](https://www.rust-lang.org/tools/install)
+
 setup in the [spotify dashboard](https://developer.spotify.com/dashboard) your application, there are several tutorials online how to do that
 
 what matters for us specifically are a few things
