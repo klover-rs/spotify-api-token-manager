@@ -34,10 +34,10 @@ pub fn refresh_tokens() {
                     println!("new token: {:?}", new_data);
 
                     INIT.call_once(|| {
-                        std::mem::drop(TOKEN_LOCK.lock().unwrap());
+                        let mut lock = TOKEN_LOCK.lock().unwrap();
+                        *lock = false;
+                        drop(lock);
                     });
-                    
-                    println!("unlocked resource");
 
                     let current_timestamp = Utc::now();
 
@@ -56,9 +56,11 @@ pub fn refresh_tokens() {
                     store_token(&new_access_token);
                 } else {
                     INIT.call_once(|| {
-                        std::mem::drop(TOKEN_LOCK.lock().unwrap());
+                        let mut lock = TOKEN_LOCK.lock().unwrap();
+                        *lock = false;
+                        drop(lock);
                     });
-                    println!("unlocked resource");
+                    
                 }
     
             }

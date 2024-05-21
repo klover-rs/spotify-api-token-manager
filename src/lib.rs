@@ -1,3 +1,5 @@
+use std::sync::Arc;
+use tokio::time::Duration as TDuration;
 use std::{net::TcpListener, sync::Mutex};
 use actix_web::{get, web, post, App, HttpResponse, HttpServer, Responder};
 use reqwest::Client;
@@ -33,7 +35,7 @@ struct TokenResponse {
 pub struct TokenManager {
     client_id: String, 
     client_secret: String,
-    listener: TcpListener
+    listener: Arc<TcpListener>,
 }
 
 
@@ -46,7 +48,7 @@ struct ClientData {
 
 lazy_static::lazy_static! {
     pub static ref SERVER_URL: Mutex<String> = Mutex::new("".to_string());
-    pub static ref TOKEN_LOCK: Mutex<()> = Mutex::new(());
+    pub static ref TOKEN_LOCK: Mutex<bool> = Mutex::new(true);
 }
 
 impl TokenManager {
@@ -55,6 +57,8 @@ impl TokenManager {
             let mut server_url = SERVER_URL.lock().unwrap();
             *server_url = listener.local_addr().unwrap().to_string();
 
+            println!("starting..");
+
             refresh_tokens();
           
         }
@@ -62,35 +66,45 @@ impl TokenManager {
         Self {
             client_id,
             client_secret, 
-            listener
+            listener: listener.into(),
         }
     }
 
-    pub async fn start_server(self) {
+    pub async fn start_server(&self) {
         println!("starting token manager.. ");
 
         self.start_actix_server()
     }
 
-    pub fn get_token() -> String {
-
-        let _lock = TOKEN_LOCK.lock().unwrap();
-
+    pub async fn get_token(&self) -> String {
+        loop {
+            let lock = TOKEN_LOCK.lock().unwrap();
+            if !*lock {
+                break;
+            }
+            drop(lock);
+            tokio::time::sleep(TDuration::from_millis(5)).await;
+        }
 
         let token = get_token_lmdb();
         token
     }
 
-    fn start_actix_server(self) {
+    fn start_actix_server(&self) {
+
+        let listener = Arc::clone(&self.listener);
+        let client_id = self.client_id.clone();
+        let client_secret = self.client_secret.clone();
+
         std::thread::spawn(move || {
             let system = actix_rt::System::new();
 
             Runtime::new().unwrap().block_on(async {
 
                 let data = ClientData {
-                    client_id: self.client_id.clone(),
-                    client_secret: self.client_secret.clone(),
-                    listener: format!("http://{}/callback", self.listener.local_addr().expect("Failed to get local address").to_string().clone())
+                    client_id: client_id.clone(),
+                    client_secret: client_secret.clone(),
+                    listener: format!("http://{}/callback", listener.local_addr().expect("Failed to get local address").to_string().clone())
                 };
 
                 let srv = HttpServer::new(move || {
@@ -101,7 +115,7 @@ impl TokenManager {
                         .service(callback)
                         .service(refresh_token)
                 })
-                .listen(self.listener)
+                .listen(listener.try_clone().unwrap())
                 .unwrap()
                 .run();
 
