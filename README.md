@@ -2,8 +2,8 @@
 Manage your access tokens easily
 
 ## About this project
-This project is currently in development state and is not meant for production purposes, use this **on your own risk**.
-The development of this library depends on serveral other factors, this is one small core library of a larger project
+This project helps you to manage your spotify access tokens. this automates the process of refreshing tokens and updating them :3!
+i love you tokio <3 
 
 ## How to use this library
 
@@ -44,7 +44,7 @@ async fn main() {
 ```
 note that the url of the listener always needs to be the same url you defined earlier in the spotify developer dashboard.
 
-after you have done it open the listener url in your browser along wihj `/login` to authorize your account
+after you have done it, open the listener url in your browser along with `/login` to authorize your account
 
 example of the url could be http://127.0.0.1:8080/login
 
