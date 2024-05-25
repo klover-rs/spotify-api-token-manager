@@ -7,31 +7,6 @@ The development of this library depends on serveral other factors, this is one s
 
 ## How to use this library
 
-### how to add the library to your cargo
-
-(expecting your directory tree looks like this)
-```
-├───libtester
-│   └───src
-├───spotify-api-token-manager
-│   ├───src
-│   │   └───util
-│   │       └───lmdb
-│   └───tests
-└───spotify_api_data
-    └───src
-```
-add this to your Cargo.toml 
-```toml
-[dependencies]
-spotify_token_manager = {path = "../spotify-api-token-manager"}
-```
-and yea the obvious, please do not forget to actually clone or download the repo :D
-
-
-### prerequisites 
-- [rust language](https://www.rust-lang.org/tools/install)
-
 setup in the [spotify dashboard](https://developer.spotify.com/dashboard) your application, there are several tutorials online how to do that
 
 what matters for us specifically are a few things
