@@ -16,10 +16,7 @@ static INIT: Once = Once::new();
 pub fn refresh_tokens() {
     task::spawn(async move {
         loop {
-            let token_details = get_token_details();
-            
-
-            if !token_details.is_empty() {
+            if let Some(token_details) = get_token_details().unwrap() {
                 let token_details_value: serde_json::Value = serde_json::from_str(&token_details).unwrap();
 
                 let expiration_timestamp = token_details_value.get("expires_in").unwrap().as_i64().unwrap();
@@ -46,8 +43,8 @@ pub fn refresh_tokens() {
                         "refresh_token": refresh_token
                     }).to_string();
 
-                    store_token_details(&new_token_details);
-                    store_token(&new_access_token);
+                    store_token_details(&new_token_details).unwrap();
+                    store_token(&new_access_token).unwrap();
 
                     INIT.call_once(|| {
                         let mut lock = TOKEN_LOCK.lock().unwrap();

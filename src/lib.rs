@@ -76,7 +76,7 @@ impl TokenManager {
         self.start_actix_server()
     }
 
-    pub async fn get_token(&self) -> String {
+    pub async fn get_token(&self) -> Option<String> {
         loop {
             let lock = TOKEN_LOCK.lock().unwrap();
             if !*lock {
@@ -86,7 +86,7 @@ impl TokenManager {
             tokio::time::sleep(TDuration::from_millis(5)).await;
         }
 
-        let token = get_token_lmdb();
+        let token = get_token_lmdb().unwrap();
         token
     }
 
@@ -188,8 +188,8 @@ async fn callback(client_data: web::Data<ClientData>, query: web::Query<AuthRequ
 
     println!("{:?}", &token_response_string);
 
-    store_token_details(&token_response_string);
-    store_token(&token_response.access_token);
+    store_token_details(&token_response_string).unwrap();
+    store_token(&token_response.access_token).unwrap();
 
 
 
