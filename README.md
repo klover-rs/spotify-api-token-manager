@@ -20,7 +20,7 @@ please note that the redirect url should always end with `/callback`
 here is a quick example usage
 
 ```rs
-use spotify_token_manager::TokenManager;
+use spotify_token_manager::{TokenManager, verify_creds};
 use std::net::TcpListener;
 use tokio::signal;
 
@@ -31,13 +31,22 @@ async fn main() {
     let client_id = "05fd6ff8a5d84f399b5491410b9b22e5";
     let client_secret = "32b3b73d7ac4425bbf60484a5deab9f5";
 
-    let init = TokenManager::new(client_id.to_string(), client_secret.to_string(), listener);
+    //SOMETHING VERY NEW!!!!! 
+    //verify your creds before actually starting the token manager :3
 
-    init.start_server().await;
+    // this returns a bool!, if its true, your creds are valid, well done, if its false, well 3x;
+    if verify_creds(&client_id, &client_secret).await.unwrap() {
+        let init = TokenManager::new(client_id.to_string(), client_secret.to_string(), listener);
 
-    let result = init.get_token().await;
+        init.start_server().await;
 
-    println!("result: {}", result);
+
+        //will return None, if you havent authorized yet.
+        let result = init.get_token().await;
+
+        println!("result: {:?}", result);
+    }
+
 
     signal::ctrl_c().await.expect("failed to listen for Ctrl+C"); //keep the the thread alive, if you dont keep the thread alive unexpected issues will occur. 
 }
