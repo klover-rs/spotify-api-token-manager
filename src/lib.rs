@@ -10,6 +10,9 @@ use tokio::runtime::Runtime;
 
 mod util;
 mod refresh_tokens;
+mod verify_creds;
+
+pub use crate::verify_creds::verify_creds;
 
 use crate::refresh_tokens::refresh_tokens;
 
@@ -97,6 +100,7 @@ impl TokenManager {
         let client_secret = self.client_secret.clone();
 
         std::thread::spawn(move || {
+
             let system = actix_rt::System::new();
 
             Runtime::new().unwrap().block_on(async {
@@ -118,15 +122,15 @@ impl TokenManager {
                 .listen(listener.try_clone().unwrap())
                 .unwrap()
                 .run();
-
+                
                 let _ = srv.await;
+
                 
             });
 
             let _ = system.run();
         });
     }
-
     
 }
 
