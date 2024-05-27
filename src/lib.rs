@@ -79,14 +79,14 @@ impl TokenManager {
         self.start_actix_server()
     }
 
-    pub async fn get_token(&self) -> Option<String> {
+    pub fn get_token(&self) -> Option<String> {
         loop {
             let lock = TOKEN_LOCK.lock().unwrap();
             if !*lock {
                 break;
             }
             drop(lock);
-            tokio::time::sleep(TDuration::from_millis(5)).await;
+            std::thread::sleep(TDuration::from_millis(5));
         }
 
         let token = get_token_lmdb().unwrap();
