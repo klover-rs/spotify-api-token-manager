@@ -36,10 +36,18 @@ async fn main() {
 
     // this returns a bool!, if its true, your creds are valid, well done, if its false, well 3x;
     if verify_creds(&client_id, &client_secret).await.unwrap() {
-        let init = TokenManager::new(client_id.to_string(), client_secret.to_string(), listener);
+        let init = TokenManager::new(
+            client_id.to_string(),
+            client_secret.to_string(),
+            vec![
+                "user-read-private".to_owned(),
+                "user-read-email".to_owned(),
+                "user-top-read".to_string(),
+            ],
+            listener
+        );
 
         init.start_server().await;
-
 
         //will return None, if you havent authorized yet.
         let result = init.get_token().await;
