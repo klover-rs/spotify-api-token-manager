@@ -38,6 +38,7 @@ struct TokenResponse {
 pub struct TokenManager {
     client_id: String, 
     client_secret: String,
+    scopes: Vec<String>,
     listener: Arc<TcpListener>,
 }
 
@@ -46,6 +47,7 @@ pub struct TokenManager {
 struct ClientData {
     client_id: String,
     client_secret: String,
+    scopes: Vec<String>,
     listener: String
 }
 
@@ -55,7 +57,7 @@ lazy_static::lazy_static! {
 }
 
 impl TokenManager {
-    pub fn new(client_id: String, client_secret: String, listener: TcpListener) -> Self {
+    pub fn new(client_id: String, client_secret: String, scopes: Vec<String>, listener: TcpListener) -> Self {
         {
             let mut server_url = SERVER_URL.lock().unwrap();
             *server_url = listener.local_addr().unwrap().to_string();
@@ -68,7 +70,8 @@ impl TokenManager {
 
         Self {
             client_id,
-            client_secret, 
+            client_secret,
+            scopes, 
             listener: listener.into(),
         }
     }
@@ -98,6 +101,7 @@ impl TokenManager {
         let listener = Arc::clone(&self.listener);
         let client_id = self.client_id.clone();
         let client_secret = self.client_secret.clone();
+        let scopes = self.scopes.clone();
 
         std::thread::spawn(move || {
 
@@ -108,6 +112,7 @@ impl TokenManager {
                 let data = ClientData {
                     client_id: client_id.clone(),
                     client_secret: client_secret.clone(),
+                    scopes: scopes.clone(),
                     listener: format!("http://{}/callback", listener.local_addr().expect("Failed to get local address").to_string().clone())
                 };
 
@@ -146,10 +151,13 @@ async fn greet(data: web::Data<ClientData>) -> impl Responder {
 async fn login(client_data: web::Data<ClientData>) -> HttpResponse {
     let client_id = client_data.client_id.clone();
     let redirect_uri = client_data.listener.clone();
+    let scopes_vec = client_data.scopes.clone();
+
+    let scopes = scopes_vec.join("%20");
 
     let auth_url = format!(
-        "https://accounts.spotify.com/authorize?client_id={}&response_type=code&redirect_uri={}&scope=user-read-private%20user-read-email",
-        client_id, redirect_uri
+        "https://accounts.spotify.com/authorize?client_id={}&response_type=code&redirect_uri={}&scope={}",
+        client_id, redirect_uri, scopes
     );
     HttpResponse::Found()
         .append_header(("Location", auth_url))
