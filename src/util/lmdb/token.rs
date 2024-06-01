@@ -24,8 +24,6 @@ pub fn store_token(token: &str) -> Result<()> {
 
     txn.commit()?;
 
-    println!("token inserted in lmdb");
-
     Ok(())
 }
 

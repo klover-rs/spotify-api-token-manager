@@ -1,12 +1,13 @@
 use std::sync::Arc;
 use tokio::time::Duration as TDuration;
 use std::{net::TcpListener, sync::Mutex};
-use actix_web::{get, web, post, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, web, post, App, HttpResponse, HttpServer};
 use reqwest::Client;
 use chrono::{Utc, Duration};
 use serde::{Serialize, Deserialize};
 use serde_json::json;
 use tokio::runtime::Runtime;
+use tracing::info;
 
 mod util;
 mod refresh_tokens;
@@ -62,8 +63,6 @@ impl TokenManager {
             let mut server_url = SERVER_URL.lock().unwrap();
             *server_url = listener.local_addr().unwrap().to_string();
 
-            println!("starting..");
-
             refresh_tokens();
           
         }
@@ -77,7 +76,8 @@ impl TokenManager {
     }
 
     pub async fn start_server(&self) {
-        println!("starting token manager.. ");
+        info!("starting token manager..");
+        
 
         self.start_actix_server()
     }
@@ -119,7 +119,6 @@ impl TokenManager {
                 let srv = HttpServer::new(move || {
                     App::new()
                         .app_data(web::Data::new(data.clone()))
-                        .route("/hello_world", web::get().to(greet))
                         .service(login)
                         .service(callback)
                         .service(refresh_token)
@@ -137,13 +136,6 @@ impl TokenManager {
         });
     }
     
-}
-
-async fn greet(data: web::Data<ClientData>) -> impl Responder {
-
-    println!("client_id: {}\nclient_secret: {}\ncallback_url: {}", data.client_id, data.client_secret, data.listener);
-
-    HttpResponse::Ok().body("Hello, world!")
 }
 
 

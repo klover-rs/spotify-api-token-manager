@@ -1,5 +1,5 @@
 use std::fs;
-
+use tracing::error;
 
 pub fn stm_data_folder() -> String {
     let mut stm_data_folder = String::new();
@@ -9,7 +9,7 @@ pub fn stm_data_folder() -> String {
 
         if !folder_path.exists() {
             if let Err(err) = fs::create_dir(&folder_path) {
-                eprintln!("failed the create folder: {}", err);
+                error!("failed the create folder: {}", err)
             }
         }
         let path_string = folder_path
@@ -20,7 +20,7 @@ pub fn stm_data_folder() -> String {
         stm_data_folder.push_str(&path_string);
 
     } else {
-        println!("unable to get the document directory");
+        error!("unable to get the document directory");
     }
 
     

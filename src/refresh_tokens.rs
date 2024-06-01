@@ -5,6 +5,7 @@ use tokio::task;
 use tokio::time::{sleep, Duration};
 use user_idle::UserIdle;
 use chrono::{Utc, Duration as CDuration};
+use tracing::info;
 
 use std::sync::Once;
 
@@ -28,7 +29,7 @@ pub fn refresh_tokens() {
 
                     let new_data = refresh_access_token(&refresh_token).await.unwrap();
 
-                    println!("new token: {:?}", new_data);
+                    info!("replaced expired access_token"); 
 
                     let current_timestamp = Utc::now();
 
@@ -83,8 +84,6 @@ async fn refresh_access_token(refresh_token: &str) -> Result<serde_json::Value, 
     let client = Client::new();
 
     let server_url = SERVER_URL.lock().unwrap().to_string();
-
-    println!("SERVER URL: {}", server_url);
 
     let response = client
         .post(format!("http://{}/refreshToken", server_url))
